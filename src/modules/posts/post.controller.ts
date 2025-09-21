@@ -10,8 +10,18 @@ const createPost = async (req: Request, res: Response) => {
         res.status(500).json(error)
     }
 }
+const getAllPost = async (req: Request, res: Response) => {
+    try {
+        const result = await postService.getAllPost()
+        res.status(200).json(result)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json(error)
+    }
+}
 
 
 export const postController = {
-    createPost
+    createPost,
+    getAllPost
 }
