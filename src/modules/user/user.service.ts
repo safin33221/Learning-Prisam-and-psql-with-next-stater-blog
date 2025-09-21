@@ -9,6 +9,13 @@ const createUser = async (payload: Prisma.UserCreateInput): Promise<User> => {
     return createUser
 }
 
+const deleteUser = async (id: number) => {
+    const user = await prisma.user.delete({
+        where: { id }
+    })
+    return user
+}
+
 const getAllFromDB = async () => {
     const user = await prisma.user.findMany({
         select: {
@@ -42,5 +49,6 @@ const getUserById = async (id: number) => {
 export const UseService = {
     createUser,
     getAllFromDB,
-    getUserById
+    getUserById,
+    deleteUser
 }
