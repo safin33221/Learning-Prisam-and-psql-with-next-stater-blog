@@ -1,5 +1,6 @@
 import { Post, Prisma } from "@prisma/client";
 import { prisma } from "../../config/db.config";
+import { takeCoverage } from "v8";
 
 const createPost = async (payload: Prisma.PostCreateInput): Promise<Post> => {
     const result = await prisma.post.create({
@@ -18,10 +19,47 @@ const createPost = async (payload: Prisma.PostCreateInput): Promise<Post> => {
     return result
 }
 
-const getAllPost = async () => {
-    const result = await prisma.post.findMany()
+const getAllPost = async ({ page = 1, limit = 10, search, isFeatured, tags }: {
+    page?: number,
+    limit?: number,
+    search?: string,
+    isFeatured?: boolean,
+    tags?: string[]
+}) => {
+    console.log(isFeatured);
+    const skip = (page - 1) * limit
+    const where: any = {
+        AND: [search && {
+            OR: [
+                {
+                    title: { contains: search, mode: "insensitive" },
+                },
+                {
+                    content: { contains: search, mode: "insensitive" }
+                }
+            ]
+        },
+        typeof isFeatured === "boolean" && { isFeatured },
+        tags && tags?.length > 0 && { tags: { hasEvery: tags } }
+
+        ].filter(Boolean)
+    }
+    console.log(search);
+    const result = await prisma.post.findMany({
+        skip,
+        take: limit,
+        where: where
+    })
     return result;
 }
+const getPostById = async (id: number) => {
+    const result = await prisma.post.findUnique({
+        where: { id }
+    })
+    return result;
+}
+
+
 const updatePost = async (id: number, payload: Partial<Post>) => {
     const result = await prisma.post.update({
         where: { id },
@@ -33,5 +71,6 @@ const updatePost = async (id: number, payload: Partial<Post>) => {
 export const postService = {
     createPost,
     getAllPost,
-    updatePost
+    updatePost,
+    getPostById
 }
